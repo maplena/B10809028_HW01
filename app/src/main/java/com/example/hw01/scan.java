@@ -45,11 +45,10 @@ public class scan extends Fragment {
     BluetoothAdapter mBluetoothAdapter;
     RecyclerView mRecyclerView;
     MyListAdapter myListAdapter;
-    HashMap<String,BLEDevice> hashMap = new HashMap<>();
-    ArrayList<BLEDevice> arrayList = new ArrayList<>();
     ArrayList<String> rs = new ArrayList<>();
     BluetoothDevice device = null;
     private static final int PERMISSION_REQUEST_CODE = 666;
+    Boolean re = false;
 
     private final static String[] permissionWeNeed = new String[]{
             Manifest.permission.BLUETOOTH_ADMIN,
@@ -108,6 +107,7 @@ public class scan extends Fragment {
 
         mRecyclerView = view.findViewById(R.id.rv);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
         myListAdapter = new MyListAdapter();
         mRecyclerView.setAdapter(myListAdapter);
         Button SB = view.findViewById(R.id.ScanButton);
@@ -236,6 +236,11 @@ public class scan extends Fragment {
     }
 
     public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.ViewHolder>{
+        private ArrayList<BLEDevice> arrayList;
+
+        public MyListAdapter(){
+            arrayList = new ArrayList<BLEDevice>();
+        }
 
         class ViewHolder extends RecyclerView.ViewHolder{
             private TextView add;
@@ -256,15 +261,30 @@ public class scan extends Fragment {
 
         @RequiresApi(api = Build.VERSION_CODES.R)
         public void addDevice(String mac, String rssi, String cont){
-            if(hashMap.containsKey(mac)){
-                return;
+            int count = 0;
+            re = false;
+            for(BLEDevice bleD : arrayList){
+                if(bleD.DeviceName.equals(mac)){
+                    re = true;
+                    BLEDevice bl = arrayList.get(count);
+                    bl.Rssi = rssi;
+                    arrayList.set(count, bl);
+                    rs.set(count,mac + " " + rssi + " " + cont + " " + device.getAlias() + " " + device.getName());
+                    break;
+                }
+                count = count + 1;
             }
-            BLEDevice ble = new BLEDevice();
-            ble.DeviceName = mac;
-            ble.Rssi = rssi;
-            ble.content = cont;
-            arrayList.add(0,ble);
-            rs.add(0,mac + " " + rssi + " " + cont + " " + device.getAlias() + " " + device.getName());
+            if (re){
+            }
+            else{
+                BLEDevice ble = new BLEDevice();
+                ble.DeviceName = mac;
+                ble.Rssi = rssi;
+                ble.content = cont;
+                arrayList.add(0,ble);
+                rs.add(0,mac + " " + rssi + " " + cont + " " + device.getAlias() + " " + device.getName());
+            }
+
         }
 
         @NonNull
@@ -286,15 +306,4 @@ public class scan extends Fragment {
             return arrayList.size();
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 }
